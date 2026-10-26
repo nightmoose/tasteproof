@@ -51,3 +51,7 @@ Deploy: `vercel deploy --prod`, with `XAI_API_KEY` (and later `QLOO_API_KEY`) se
 
 ## License
 MIT — see [LICENSE](LICENSE).
+
+## Abuse limits
+
+`/api/plan` is rate-limited: 10 req/hour per IP (`PLAN_PER_IP_HOUR`) and 200 req/day global (`PLAN_DAILY_CAP`). Counters are in-memory per serverless instance; set `UPSTASH_REDIS_REST_URL`/`UPSTASH_REDIS_REST_TOKEN` to enforce them globally via Upstash. Over-limit requests get HTTP 429 and a "demo limit reached" message.

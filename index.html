@@ -35,7 +35,7 @@ function setMode(m){const e=$("#mode");e.textContent="Qloo: "+(m==="live"?"LIVE"
 document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{view=t.dataset.v;document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("on",x===t));render();});
 $("#f").onsubmit=async e=>{e.preventDefault();const b=$("#go");b.disabled=true;b.textContent="Planning…";$("#out").innerHTML='<div class="steps">Agent is calling Qloo and drafting… (usually 5–20 s)</div>';
  try{const r=await fetch("/api/plan",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({query:$("#qin").value,inject_fault:$("#fault").checked})});
-  const j=await r.json();if(!r.ok)throw new Error(j.error||r.status);R=j;setMode(j.qloo_mode);$("#tabs").hidden=false;render();}
+  const j=await r.json();if(r.status===429){$("#out").innerHTML='<div class="err">⏳ '+esc(j.error||"Demo limit reached — please try again later.")+'</div>';return;}if(!r.ok)throw new Error(j.error||r.status);R=j;setMode(j.qloo_mode);$("#tabs").hidden=false;render();}
  catch(err){$("#out").innerHTML='<div class="err">Error: '+esc(err.message)+'</div>';}finally{b.disabled=false;b.textContent="Plan it";}};
 function ent(id){return (R.evidence_index||{})[id]||{};}
 function evBox(ev){const e=ent(ev.entity_id),s=Number(ev.score);return `<div class="ev">cites: ${esc(e.type||"urn:entity")} · ${esc(ev.entity_id)}${R.qloo_mode==="mock"?" (mock)":""}\naffinity ${s.toFixed(2)}<div class="bar"><i style="width:${Math.round(s*100)}%"></i></div>${e.tags&&e.tags.length?"tags: "+esc(e.tags.join(", ")):""}</div>`;}

@@ -10,6 +10,9 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from tasteproof.agent import Agent  # noqa: E402
 from tasteproof.llm import GrokLLM, DEFAULT_MODEL  # noqa: E402
 from tasteproof.qloo import QlooClient, default_mode  # noqa: E402
+from tasteproof.ratelimit import LIMIT_MSG, RateLimiter, client_ip  # noqa: E402
+
+LIMITER = RateLimiter()
 
 
 class handler(BaseHTTPRequestHandler):
@@ -31,6 +34,9 @@ class handler(BaseHTTPRequestHandler):
             q = str(req.get("query", "")).strip()[:300]
             if not q:
                 return self._send(400, {"error": "query is required"})
+            ok, why = LIMITER.check(client_ip(self.headers))
+            if not ok:
+                return self._send(429, {"error": LIMIT_MSG, "limit": why})
             result = Agent(GrokLLM(), QlooClient(), inject_fault=bool(req.get("inject_fault"))).run(q)
             self._send(200, result)
         except Exception as e:

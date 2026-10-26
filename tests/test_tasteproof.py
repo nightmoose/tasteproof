@@ -161,3 +161,17 @@ def test_agent_fault_injection_repairs(qloo):
     r = Agent(FakeLLM([lambda m: good]), qloo, inject_fault=True).run("q")
     assert r["attempts"][0]["ok"] is False and r["attempts"][1]["ok"] is True
     assert any(t["kind"] == "fault_injected" for t in r["trace"])
+
+
+def test_rate_limiter_per_ip_and_daily(monkeypatch):
+    from tasteproof.ratelimit import RateLimiter
+    monkeypatch.delenv("UPSTASH_REDIS_REST_URL", raising=False)
+    t = [1_000_000.0]
+    rl = RateLimiter(per_ip=2, daily=3, clock=lambda: t[0])
+    assert rl.check("a") == (True, None)
+    assert rl.check("a") == (True, None)
+    assert rl.check("a") == (False, "ip")
+    assert rl.check("b") == (True, None)
+    assert rl.check("c") == (False, "daily")
+    t[0] += 86400  # next day, hour window passed
+    assert rl.check("a") == (True, None)
