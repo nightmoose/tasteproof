@@ -1,5 +1,9 @@
 {
+  "framework": null,
   "functions": {
-    "api/plan.py": { "maxDuration": 60, "includeFiles": "{tasteproof,fixtures}/**" }
+    "api/plan.py": {
+      "maxDuration": 60,
+      "includeFiles": "{tasteproof,fixtures}/**"
+    }
   }
 }

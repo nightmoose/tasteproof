@@ -2,7 +2,7 @@
 
 **A planning agent where every recommendation has to show its Qloo evidence.** Anything the LLM can't back with a real Qloo entity ID and affinity score from the current run is rejected, repaired, or dropped before you see it.
 
-Built for the Qloo Agentic Hackathon.
+Built for the Qloo Agentic Hackathon. **Live demo:** https://tasteproof-qloo.vercel.app
 
 > **Mock vs live:** until a Qloo hackathon API key is configured (`QLOO_API_KEY`), the app runs in **mock mode**: Qloo responses come from labeled fixtures in `fixtures/` (all names start with "Mock …"), and the UI shows a **MOCK DATA** badge and banner. Fixture field names follow the Qloo docs but are unconfirmed until tested against the live API. Setting `QLOO_API_KEY` switches every call to the live API with no code change.
 
