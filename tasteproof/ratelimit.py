@@ -3,7 +3,9 @@
 Per-IP: PLAN_PER_IP_HOUR (default 10) requests per rolling hour.
 Global: PLAN_DAILY_CAP (default 200) requests per UTC day.
 
-Storage: in-memory per serverless instance (free, no setup). If
+Storage: in-memory per serverless instance, plus a global counter in a free
+Supabase table via the `tasteproof_hit` RPC when SUPABASE_RL_URL/SUPABASE_RL_KEY
+are set (anon key; RPC is security definer, table is RLS-locked). If
 UPSTASH_REDIS_REST_URL/TOKEN are set, the global daily cap and per-IP counts
 are also enforced via Upstash REST (fixed windows) so they hold across instances.
 """
@@ -44,7 +46,7 @@ class RateLimiter:
             if len(self._ip) > 5000:  # bound memory
                 for k in [k for k, v in self._ip.items() if not v and k != ip]:
                     del self._ip[k]
-        remote = _upstash_check(ip, day, now, self.per_ip, self.daily)
+        remote = _supabase_check(ip, day, self.per_ip, self.daily) or _upstash_check(ip, day, now, self.per_ip, self.daily)
         if remote:
             return False, remote
         with self._lock:
@@ -71,6 +73,25 @@ def _upstash_check(ip, day, now, per_ip, daily):
         if int(res[0]["result"]) > daily:
             return "daily"
         if int(res[2]["result"]) > per_ip:
+            return "ip"
+    except Exception:
+        return None  # fail open to in-memory limits
+    return None
+
+
+def _supabase_check(ip, day, per_ip, daily):
+    url, key = os.environ.get("SUPABASE_RL_URL"), os.environ.get("SUPABASE_RL_KEY")
+    if not (url and key):
+        return None
+    try:
+        req = urllib.request.Request(url.rstrip("/") + "/rest/v1/rpc/tasteproof_hit",
+                                     data=json.dumps({"ip_key": ip, "day_key": day}).encode(),
+                                     headers={"apikey": key, "Authorization": f"Bearer {key}",
+                                              "Content-Type": "application/json"})
+        res = json.loads(urllib.request.urlopen(req, timeout=3).read())
+        if int(res["day"]) > daily:
+            return "daily"
+        if int(res["ip"]) > per_ip:
             return "ip"
     except Exception:
         return None  # fail open to in-memory limits
