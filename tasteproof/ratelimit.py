@@ -52,6 +52,10 @@ class RateLimiter:
             self._count += 1
         return True, None
 
+    def remaining(self, ip):
+        with self._lock:
+            return max(0, self.per_ip - len(self._ip.get(ip, ())))
+
 
 def _upstash_check(ip, day, now, per_ip, daily):
     url, tok = os.environ.get("UPSTASH_REDIS_REST_URL"), os.environ.get("UPSTASH_REDIS_REST_TOKEN")
