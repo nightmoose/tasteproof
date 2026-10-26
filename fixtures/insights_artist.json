@@ -1,0 +1,93 @@
+{
+ "_note": "MOCK FIXTURE - not real Qloo data. Shapes follow the Qloo docs; field names to be confirmed with a live key.",
+ "success": true,
+ "results": {
+  "entities": [
+   {
+    "name": "Mock Artist Lumen",
+    "entity_id": "4CE0EEE5-B6E4-5C04-551D-FFD605E13384",
+    "type": "urn:entity",
+    "subtype": "urn:entity:artist",
+    "properties": {},
+    "query": {
+     "affinity": 0.84
+    },
+    "tags": [
+     {
+      "id": "urn:tag:genre:qloo:indie_folk",
+      "name": "indie_folk",
+      "type": "urn:tag:genre:qloo"
+     }
+    ]
+   },
+   {
+    "name": "Mock Artist Harbor",
+    "entity_id": "FCBA8DF9-5E5D-3AB0-5A43-DD7CEE98D8E2",
+    "type": "urn:entity",
+    "subtype": "urn:entity:artist",
+    "properties": {},
+    "query": {
+     "affinity": 0.81
+    },
+    "tags": [
+     {
+      "id": "urn:tag:genre:qloo:indie_folk",
+      "name": "indie_folk",
+      "type": "urn:tag:genre:qloo"
+     }
+    ]
+   },
+   {
+    "name": "Mock Artist Quietwave",
+    "entity_id": "8835F430-7ADB-666B-B41A-59628F2C9E77",
+    "type": "urn:entity",
+    "subtype": "urn:entity:artist",
+    "properties": {},
+    "query": {
+     "affinity": 0.77
+    },
+    "tags": [
+     {
+      "id": "urn:tag:genre:qloo:indie_folk",
+      "name": "indie_folk",
+      "type": "urn:tag:genre:qloo"
+     }
+    ]
+   },
+   {
+    "name": "Mock Artist Fernlight",
+    "entity_id": "E306BAA2-79C9-E759-1A04-02607C750EA5",
+    "type": "urn:entity",
+    "subtype": "urn:entity:artist",
+    "properties": {},
+    "query": {
+     "affinity": 0.73
+    },
+    "tags": [
+     {
+      "id": "urn:tag:genre:qloo:indie_folk",
+      "name": "indie_folk",
+      "type": "urn:tag:genre:qloo"
+     }
+    ]
+   },
+   {
+    "name": "Mock Artist Slow Tide",
+    "entity_id": "F2781DD7-3D0F-D3A5-C6C6-40B0F24E1F93",
+    "type": "urn:entity",
+    "subtype": "urn:entity:artist",
+    "properties": {},
+    "query": {
+     "affinity": 0.7
+    },
+    "tags": [
+     {
+      "id": "urn:tag:genre:qloo:indie_folk",
+      "name": "indie_folk",
+      "type": "urn:tag:genre:qloo"
+     }
+    ]
+   }
+  ]
+ }
+}

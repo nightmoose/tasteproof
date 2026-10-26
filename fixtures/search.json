@@ -1,0 +1,50 @@
+{
+ "_note": "MOCK FIXTURE - not real Qloo data. Shapes follow the Qloo docs; field names to be confirmed with a live key.",
+ "results": [
+  {
+   "name": "Phoebe Bridgers",
+   "entity_id": "C889DB43-0A93-C89A-5086-98422F2718A1",
+   "types": [
+    "urn:entity:artist"
+   ],
+   "popularity": 0.93,
+   "disambiguation": "mock"
+  },
+  {
+   "name": "Mitski",
+   "entity_id": "3035D521-80DC-D39B-65AF-5819D8E7D614",
+   "types": [
+    "urn:entity:artist"
+   ],
+   "popularity": 0.91,
+   "disambiguation": "mock"
+  },
+  {
+   "name": "Bon Iver",
+   "entity_id": "C2AA5F2D-469C-03B9-BBA5-CB0091395D85",
+   "types": [
+    "urn:entity:artist"
+   ],
+   "popularity": 0.9,
+   "disambiguation": "mock"
+  },
+  {
+   "name": "Taylor Swift",
+   "entity_id": "7AE068E1-44AA-B71B-5C9F-9B0A517ADE9F",
+   "types": [
+    "urn:entity:artist"
+   ],
+   "popularity": 0.99,
+   "disambiguation": "mock"
+  },
+  {
+   "name": "Austin",
+   "entity_id": "54C3265D-AEDC-D4E9-F97F-E63E102C3307",
+   "types": [
+    "urn:entity:destination"
+   ],
+   "popularity": 0.95,
+   "disambiguation": "mock"
+  }
+ ]
+}

@@ -1,0 +1,300 @@
+{
+ "_note": "MOCK FIXTURE - not real Qloo data. Shapes follow the Qloo docs; field names to be confirmed with a live key.",
+ "success": true,
+ "results": {
+  "entities": [
+   {
+    "name": "Mock Taqueria Nocturna",
+    "entity_id": "F371CD0B-3A2A-8286-C00E-8BA7FBFE13E7",
+    "type": "urn:entity",
+    "subtype": "urn:entity:place",
+    "properties": {
+     "address": "Austin, TX (mock)",
+     "is_closed": false,
+     "keywords": [
+      {
+       "name": "dinner"
+      }
+     ]
+    },
+    "location": {
+     "lat": 30.26,
+     "lon": -97.74
+    },
+    "query": {
+     "affinity": 0.87
+    },
+    "tags": [
+     {
+      "id": "urn:tag:genre:qloo:cozy",
+      "name": "cozy",
+      "type": "urn:tag:genre:qloo"
+     },
+     {
+      "id": "urn:tag:genre:qloo:late_night",
+      "name": "late_night",
+      "type": "urn:tag:genre:qloo"
+     },
+     {
+      "id": "urn:tag:genre:qloo:tacos",
+      "name": "tacos",
+      "type": "urn:tag:genre:qloo"
+     }
+    ]
+   },
+   {
+    "name": "Mock Listening Room",
+    "entity_id": "79A441C6-932F-F7A5-B292-44EB9E5F9827",
+    "type": "urn:entity",
+    "subtype": "urn:entity:place",
+    "properties": {
+     "address": "Austin, TX (mock)",
+     "is_closed": false,
+     "keywords": [
+      {
+       "name": "live music"
+      }
+     ]
+    },
+    "location": {
+     "lat": 30.26,
+     "lon": -97.74
+    },
+    "query": {
+     "affinity": 0.91
+    },
+    "tags": [
+     {
+      "id": "urn:tag:genre:qloo:live_music",
+      "name": "live_music",
+      "type": "urn:tag:genre:qloo"
+     },
+     {
+      "id": "urn:tag:genre:qloo:intimate",
+      "name": "intimate",
+      "type": "urn:tag:genre:qloo"
+     },
+     {
+      "id": "urn:tag:genre:qloo:indie",
+      "name": "indie",
+      "type": "urn:tag:genre:qloo"
+     }
+    ]
+   },
+   {
+    "name": "Mock Speakeasy 6th",
+    "entity_id": "5D326CEA-F379-BB23-E02A-18F98CD0FF1C",
+    "type": "urn:entity",
+    "subtype": "urn:entity:place",
+    "properties": {
+     "address": "Austin, TX (mock)",
+     "is_closed": false,
+     "keywords": [
+      {
+       "name": "nightcap"
+      }
+     ]
+    },
+    "location": {
+     "lat": 30.26,
+     "lon": -97.74
+    },
+    "query": {
+     "affinity": 0.79
+    },
+    "tags": [
+     {
+      "id": "urn:tag:genre:qloo:speakeasy",
+      "name": "speakeasy",
+      "type": "urn:tag:genre:qloo"
+     },
+     {
+      "id": "urn:tag:genre:qloo:quiet",
+      "name": "quiet",
+      "type": "urn:tag:genre:qloo"
+     },
+     {
+      "id": "urn:tag:genre:qloo:cocktails",
+      "name": "cocktails",
+      "type": "urn:tag:genre:qloo"
+     }
+    ]
+   },
+   {
+    "name": "Mock Vinyl & Coffee",
+    "entity_id": "3F0D8805-D1B6-FAA0-6BA0-594E71D14A0F",
+    "type": "urn:entity",
+    "subtype": "urn:entity:place",
+    "properties": {
+     "address": "Austin, TX (mock)",
+     "is_closed": false,
+     "keywords": [
+      {
+       "name": "coffee"
+      }
+     ]
+    },
+    "location": {
+     "lat": 30.26,
+     "lon": -97.74
+    },
+    "query": {
+     "affinity": 0.83
+    },
+    "tags": [
+     {
+      "id": "urn:tag:genre:qloo:records",
+      "name": "records",
+      "type": "urn:tag:genre:qloo"
+     },
+     {
+      "id": "urn:tag:genre:qloo:coffee",
+      "name": "coffee",
+      "type": "urn:tag:genre:qloo"
+     },
+     {
+      "id": "urn:tag:genre:qloo:chill",
+      "name": "chill",
+      "type": "urn:tag:genre:qloo"
+     }
+    ]
+   },
+   {
+    "name": "Mock Rooftop Garden",
+    "entity_id": "7894B66A-BD5F-7419-1999-639D8099EA3D",
+    "type": "urn:entity",
+    "subtype": "urn:entity:place",
+    "properties": {
+     "address": "Austin, TX (mock)",
+     "is_closed": false,
+     "keywords": [
+      {
+       "name": "bar"
+      }
+     ]
+    },
+    "location": {
+     "lat": 30.26,
+     "lon": -97.74
+    },
+    "query": {
+     "affinity": 0.72
+    },
+    "tags": [
+     {
+      "id": "urn:tag:genre:qloo:rooftop",
+      "name": "rooftop",
+      "type": "urn:tag:genre:qloo"
+     },
+     {
+      "id": "urn:tag:genre:qloo:views",
+      "name": "views",
+      "type": "urn:tag:genre:qloo"
+     }
+    ]
+   },
+   {
+    "name": "Mock Ramen Alley",
+    "entity_id": "F1774C51-0AB8-C7F9-AB0B-70ED1FADC8F3",
+    "type": "urn:entity",
+    "subtype": "urn:entity:place",
+    "properties": {
+     "address": "Austin, TX (mock)",
+     "is_closed": false,
+     "keywords": [
+      {
+       "name": "dinner"
+      }
+     ]
+    },
+    "location": {
+     "lat": 30.26,
+     "lon": -97.74
+    },
+    "query": {
+     "affinity": 0.76
+    },
+    "tags": [
+     {
+      "id": "urn:tag:genre:qloo:ramen",
+      "name": "ramen",
+      "type": "urn:tag:genre:qloo"
+     },
+     {
+      "id": "urn:tag:genre:qloo:casual",
+      "name": "casual",
+      "type": "urn:tag:genre:qloo"
+     }
+    ]
+   },
+   {
+    "name": "Mock Indie Bookshop",
+    "entity_id": "A81E5088-28E0-10BB-D66A-0BE2D45A1BA9",
+    "type": "urn:entity",
+    "subtype": "urn:entity:place",
+    "properties": {
+     "address": "Austin, TX (mock)",
+     "is_closed": false,
+     "keywords": [
+      {
+       "name": "shop"
+      }
+     ]
+    },
+    "location": {
+     "lat": 30.26,
+     "lon": -97.74
+    },
+    "query": {
+     "affinity": 0.81
+    },
+    "tags": [
+     {
+      "id": "urn:tag:genre:qloo:books",
+      "name": "books",
+      "type": "urn:tag:genre:qloo"
+     },
+     {
+      "id": "urn:tag:genre:qloo:quiet",
+      "name": "quiet",
+      "type": "urn:tag:genre:qloo"
+     }
+    ]
+   },
+   {
+    "name": "Mock Moonlight Diner",
+    "entity_id": "401D4DBF-3C15-B7D7-FA61-D9C09883FA30",
+    "type": "urn:entity",
+    "subtype": "urn:entity:place",
+    "properties": {
+     "address": "Austin, TX (mock)",
+     "is_closed": false,
+     "keywords": [
+      {
+       "name": "late food"
+      }
+     ]
+    },
+    "location": {
+     "lat": 30.26,
+     "lon": -97.74
+    },
+    "query": {
+     "affinity": 0.74
+    },
+    "tags": [
+     {
+      "id": "urn:tag:genre:qloo:diner",
+      "name": "diner",
+      "type": "urn:tag:genre:qloo"
+     },
+     {
+      "id": "urn:tag:genre:qloo:late_night",
+      "name": "late_night",
+      "type": "urn:tag:genre:qloo"
+     }
+    ]
+   }
+  ]
+ }
+}

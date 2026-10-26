@@ -1,0 +1,63 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TasteProof — every recommendation shows its Qloo evidence</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Inter,Helvetica,Arial,sans-serif;background:#0f1220;color:#e8eaf3;min-height:100vh}
+.top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:18px 36px;border-bottom:1px solid #23284a}.logo{font-weight:800;font-size:22px}.logo span{color:#8b7bff}
+.pill{font-size:12px;padding:4px 10px;border-radius:99px;background:#2a2f55;color:#b9b3ff;margin-left:8px;display:inline-block}.mock{background:#5a3b00;color:#ffcc66;font-weight:700}.live{background:#0d4a3a;color:#3ee0b0;font-weight:700}
+.wrap{padding:28px 36px;max-width:1440px;margin:0 auto}.q{display:flex;gap:12px}.q input{flex:1;background:#171b33;border:1px solid #343a6b;border-radius:12px;color:#fff;padding:16px 18px;font-size:17px;min-width:0}
+.btn{background:#8b7bff;color:#fff;border-radius:12px;padding:16px 26px;font-weight:700;border:0;font-size:16px;cursor:pointer}.btn:disabled{opacity:.5;cursor:wait}
+.opts{margin-top:10px;font-size:13px;color:#9aa0c6;display:flex;gap:18px;align-items:center;flex-wrap:wrap}.opts a{color:#b9b3ff;cursor:pointer}
+.tabs{display:flex;gap:6px;margin-top:18px}.tab{background:#171b33;border:1px solid #2a2f55;color:#9aa0c6;padding:8px 14px;border-radius:10px;cursor:pointer;font-size:14px}.tab.on{color:#fff;border-color:#8b7bff}
+.steps{margin-top:14px;font-size:14px;color:#9aa0c6}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px;margin-top:22px}.card{background:#171b33;border:1px solid #2a2f55;border-radius:16px;padding:18px}
+.card h3{margin:4px 0 6px;font-size:18px}.t{font-size:12px;color:#9aa0c6;text-transform:uppercase;letter-spacing:1px}.why{font-size:14px;color:#c9cce2;line-height:1.45}
+.ev{margin-top:12px;background:#0f1220;border:1px dashed #3d4480;border-radius:10px;padding:10px;font-family:Menlo,monospace;font-size:12px;color:#a9b0e0;white-space:pre-wrap;word-break:break-word}
+.bar{height:6px;background:#2a2f55;border-radius:6px;margin-top:6px}.bar i{display:block;height:6px;border-radius:6px;background:linear-gradient(90deg,#8b7bff,#3ee0b0)}
+.ok{color:#3ee0b0;font-weight:700}.bad{color:#ff6b81;font-weight:700}.fix{color:#ffcc66;font-weight:700}
+.tgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:18px;margin-top:22px}.span{grid-column:1/-1}
+.mockban{background:#5a3b00;color:#ffcc66;text-align:center;font-size:13px;padding:6px}.err{color:#ff6b81;margin-top:16px}
+details{margin-top:10px}summary{cursor:pointer;color:#9aa0c6;font-size:13px}
+@media(max-width:700px){.top,.wrap{padding:14px}.q{flex-direction:column}.tgrid{grid-template-columns:1fr}}
+</style></head><body>
+<div id="mockban" class="mockban" hidden>MOCK DATA — the Qloo API key is not configured yet, so Qloo results come from labeled fixtures, not the live Qloo API.</div>
+<div class="top"><div class="logo">Taste<span>Proof</span><span id="tracetitle" hidden> · Validation trace</span></div>
+<div><span id="mode" class="pill">Qloo: …</span><span id="vcount" class="pill" hidden></span><span id="runid" class="pill" hidden></span><span class="pill">schema: itinerary.v1</span></div></div>
+<div class="wrap">
+<form class="q" id="f"><input id="qin" value="Plan a Friday night in Austin for fans of Phoebe Bridgers" aria-label="What should we plan?"><button class="btn" id="go">Plan it</button></form>
+<div class="opts"><label><input type="checkbox" id="fault"> Stress test: inject a hallucinated stop into the first draft (shows the repair loop)</label></div>
+<div class="tabs" id="tabs" hidden><div class="tab on" data-v="plan">Plan</div><div class="tab" data-v="trace">Validation trace</div></div>
+<div id="out"></div></div>
+<script>
+const $=s=>document.querySelector(s),esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let R=null,view="plan";
+fetch("/api/plan").then(r=>r.json()).then(s=>setMode(s.qloo_mode)).catch(()=>setMode("unknown"));
+function setMode(m){const e=$("#mode");e.textContent="Qloo: "+(m==="live"?"LIVE":m==="mock"?"MOCK DATA":"?");e.className="pill "+(m==="live"?"live":"mock");$("#mockban").hidden=m==="live";}
+document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{view=t.dataset.v;document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("on",x===t));render();});
+$("#f").onsubmit=async e=>{e.preventDefault();const b=$("#go");b.disabled=true;b.textContent="Planning…";$("#out").innerHTML='<div class="steps">Agent is calling Qloo and drafting… (usually 5–20 s)</div>';
+ try{const r=await fetch("/api/plan",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({query:$("#qin").value,inject_fault:$("#fault").checked})});
+  const j=await r.json();if(!r.ok)throw new Error(j.error||r.status);R=j;setMode(j.qloo_mode);$("#tabs").hidden=false;render();}
+ catch(err){$("#out").innerHTML='<div class="err">Error: '+esc(err.message)+'</div>';}finally{b.disabled=false;b.textContent="Plan it";}};
+function ent(id){return (R.evidence_index||{})[id]||{};}
+function evBox(ev){const e=ent(ev.entity_id),s=Number(ev.score);return `<div class="ev">cites: ${esc(e.type||"urn:entity")} · ${esc(ev.entity_id)}${R.qloo_mode==="mock"?" (mock)":""}\naffinity ${s.toFixed(2)}<div class="bar"><i style="width:${Math.round(s*100)}%"></i></div>${e.tags&&e.tags.length?"tags: "+esc(e.tags.join(", ")):""}</div>`;}
+function render(){if(!R)return;const it=R.itinerary,n=it.stops.length,tot=n+R.dropped.filter(d=>d.startsWith("stops")).length;
+ $("#vcount").hidden=false;$("#vcount").textContent=`${n}/${tot} recommendations validated`;$("#runid").hidden=false;$("#runid").textContent="run #"+R.run_id;$("#tracetitle").hidden=view!=="trace";
+ $("#out").innerHTML=view==="plan"?plan(it):trace();}
+function stepsLine(){return "Agent steps: "+R.steps.map(s=>{const m=s.match(/^(search|insights|tags)(.*)$/);if(m)return `<b>${m[1]}</b>${esc(m[2])}`;if(/passed/.test(s))return `<span class="ok">${esc(s)}</span>`;if(/error|dropped/.test(s))return `<span class="fix">${esc(s)}</span>`;return esc(s);}).join(" → ");}
+function plan(it){let h=`<div class="steps">${stepsLine()}</div>`;
+ if(!it.stops.length)h+='<div class="err">No stop could be backed by a Qloo entity, so nothing is shown. See the validation trace.</div>';
+ h+='<div class="grid">'+it.stops.map(s=>`<div class="card"><div class="t">${esc(s.time)} · ${esc(s.label)}</div><h3>${esc(s.name)}</h3><div class="why">${esc(s.why)}</div>${evBox(s.evidence)}</div>`).join("")+"</div>";
+ if(it.playlist.length)h+=`<div class="card" style="margin-top:18px"><div class="t">Also on the playlist for the walk</div><div class="why">${it.playlist.map(p=>`<span title="${esc(p.evidence.entity_id)}">${esc(p.name)} (${Number(p.evidence.score).toFixed(2)})</span>`).join(" · ")} — hover a name for its Qloo entity ID</div></div>`;
+ if(R.dropped.length)h+=`<div class="card" style="margin-top:18px"><div class="t">Dropped</div><div class="why bad">${R.dropped.length} item(s) could not cite Qloo evidence after 2 repairs and were removed: ${esc(R.dropped.join(", "))}</div></div>`;
+ return h;}
+function trace(){let h='<div class="tgrid">';
+ R.attempts.forEach((a,i)=>{const prev=R.attempts[i-1];const title=a.ok?(a.kind==="draft"?'<h3 class="ok">✓ Passed first time</h3>':'<h3 class="fix">⟳ Repaired</h3>'):`<h3 class="bad">✗ Rejected — ${a.errors.length} error${a.errors.length>1?"s":""}</h3>`;
+  const body=a.ok?(a.kind==="repair"?"agent re-prompted with errors + allowed entity list\n":"")+(a.plan&&a.plan.stops||[]).map((s,j)=>`stops[${j}] → cited ${s.evidence?.entity_id} (${s.evidence?.score})`).join("\n"):a.errors.join("\n")+"\n— no citation, no recommendation";
+  h+=`<div class="card"><div class="t">Attempt ${a.attempt} · ${a.kind==="draft"?"LLM draft":"Repair"}</div>${title}<div class="ev">${esc(body)}</div><details><summary>submitted JSON</summary><div class="ev" style="color:${a.ok?"#9ff0d4":"#ff9aa8"}">${esc(JSON.stringify(a.plan,null,1))}</div></details></div>`;});
+ const it=R.itinerary,n=it.stops.length,rep=R.repairs,ok=!R.dropped.length&&n;const tc=R.tool_counts,tcs=Object.entries(tc).map(([k,v])=>`${k}(${v})`).join(" · ");
+ h+=`<div class="card span"><div class="t">Final check</div>${ok?`<h3 class="ok">✓ Passed — ${n}/${n} stops cite a real Qloo entity and score</h3>`:`<h3 class="fix">${n} stop(s) kept, ${R.dropped.length} dropped</h3>`}
+ <div class="why">JSON schema valid · every entity_id present in this run's Qloo responses · scores match source · ${rep} repair${rep===1?"":"s"}, 0 hallucinations shipped${R.trace.some(t=>t.kind==="fault_injected")?" · stress test: a fault was injected into draft 1":""}</div>
+ <div class="ev">tool calls: ${esc(tcs)} — ${R.elapsed_s} s · model ${esc(R.model)}</div>
+ <details><summary>Qloo request log (${R.qloo_requests.length})</summary><div class="ev">${esc(R.qloo_requests.map(q=>`[${q.mode}] ${q.method} ${q.path} ${new URLSearchParams(q.params)} → ${q.status}, ${q.result_count??0} results, ${q.ms} ms`).join("\n"))}</div></details>
+ <details><summary>Full agent trace (${R.trace.length} events)</summary><div class="ev">${esc(R.trace.map(t=>JSON.stringify(t)).join("\n"))}</div></details></div></div>`;
+ return h;}
+</script></body></html>
