@@ -6,6 +6,7 @@ import json
 import time
 import uuid
 
+from .intent import detect_categories, resolve_category_tags
 from .qloo import QlooClient, extract_entities
 from .schema import drop_invalid, validate_plan
 
@@ -69,6 +70,11 @@ class Agent:
 
         msgs = [{"role": "system", "content": SYSTEM}, {"role": "user", "content": query}]
         log("user_query", query=query, qloo_mode=self.qloo.mode)
+        self._category_tags = self._resolve_categories(query, log, count, steps)
+        if self._category_tags:
+            names = ", ".join(c["category"] for c in self._category_tags)
+            msgs.append({"role": "user", "content": f"Requested place category: {names}. Place insights are filtered to it automatically; "
+                         "at least one stop MUST be one of these category results (copy it from a qloo_insights result)."})
         for turn in range(MAX_TURNS):
             count("llm.call")
             msg = self.llm.chat(msgs, TOOLS)
@@ -110,6 +116,42 @@ class Agent:
             "evidence_index": index, "qloo_requests": self.qloo.request_log, "trace": trace,
         }
 
+    def _resolve_categories(self, query, log, count, steps):
+        out = []
+        for cat in detect_categories(query):
+            count("qloo.tags")
+            tags = resolve_category_tags(self.qloo, cat)
+            log("category", category=cat, tags=tags)
+            if tags:
+                out.append({"category": cat, "tags": tags})
+                steps.append(f'category "{cat}" → tag {tags[0]["name"]}')
+        return out
+
+    def _insights_with_fallback(self, p, log, steps):
+        """Call /v2/insights; if it returns no entities, relax filters step by step
+        (drop seed signal, then tag filter, then both) so the plan always has candidates."""
+        data = self.qloo.insights(p)
+        if extract_entities(data):
+            return data
+        relaxations = []
+        if "signal.interests.entities" in p:
+            relaxations.append(("dropped seed signal", {k: v for k, v in p.items() if k != "signal.interests.entities"}))
+        if "filter.tags" in p:
+            relaxations.append(("dropped tag filter", {k: v for k, v in p.items() if k != "filter.tags"}))
+        if "filter.tags" in p and "signal.interests.entities" in p and "filter.location.query" in p:
+            relaxations.append(("location only", {k: v for k, v in p.items() if k not in ("filter.tags", "signal.interests.entities")}))
+        for why, rp in relaxations:
+            data = self.qloo.insights(rp)
+            n = len(extract_entities(data))
+            log("insights_fallback", relaxed=why, n=n)
+            if n:
+                steps.append(f"insights fallback ({why}) → {n} results")
+                if isinstance(data, dict):
+                    data = {**data, "fallback": why}
+                return data
+        log("insights_fallback", relaxed="exhausted", n=0)
+        return data
+
     def _tool(self, name, args, index, attempts, counts, steps, log):
         try:
             if name == "qloo_search":
@@ -125,7 +167,12 @@ class Agent:
                     p["filter.tags"] = ",".join(args["tag_ids"])
                 if args.get("location"):
                     p["filter.location.query"] = args["location"]
-                data = self.qloo.insights(p)
+                if (p["filter.type"] == "urn:entity:place" and "filter.tags" not in p
+                        and getattr(self, "_category_tags", None) and not getattr(self, "_category_served", False)):
+                    p["filter.tags"] = ",".join(t["id"] for c in self._category_tags for t in c["tags"])
+                    self._category_served = True
+                    log("category_filter", tags=p["filter.tags"])
+                data = self._insights_with_fallback(p, log, steps)
                 steps.append(f'insights {args.get("filter_type", "").split(":")[-1]}' + (f' in {args["location"]}' if args.get("location") else ""))
             elif name == "qloo_tags":
                 count_key = "qloo.tags"
@@ -164,7 +211,12 @@ class Agent:
         for e in ents:
             index[e["entity_id"]] = e
         log("tool", name=name, args=args, n=len(ents), mode=self.qloo.mode)
-        return {"source": self.qloo.mode, "entities": ents}
+        out = {"source": self.qloo.mode, "entities": ents}
+        if isinstance(data, dict) and data.get("fallback"):
+            out["note"] = f"original query returned no results; fallback: {data['fallback']}"
+        elif name == "qloo_insights" and not ents:
+            out["note"] = "no results even after fallbacks; try a different seed or city"
+        return out
 
 
 def _inject_fault(plan):
