@@ -176,3 +176,109 @@ def test_rate_limiter_per_ip_and_daily(monkeypatch):
     assert rl.check("c") == (False, "daily")
     t[0] += 86400  # next day, hour window passed
     assert rl.check("a") == (True, None)
+
+
+# Synthetic entities in the live response shapes (confirmed 2026-10-27). Values are made up;
+# real Qloo responses are not stored in this public repo.
+LIVE_SHAPE_INSIGHTS = {"success": True, "results": {"entities": [{
+    "name": "Example Cafe", "entity_id": "00000000-0000-0000-0000-000000000001", "type": "urn:entity",
+    "subtype": "urn:entity:place", "popularity": 0.5, "disambiguation": "1 Main St",
+    "properties": {"address": "1 Main St, Austin, TX"},
+    "query": {"affinity": 0.81, "distance": 0, "measurements": {"audience_growth": 0}},
+    "tags": [{"id": "urn:tag:accessibility:place:wheelchair_accessible_entrance", "name": "Wheelchair accessible entrance", "type": "urn:tag:accessibility:place"},
+             {"id": "urn:tag:service_type:qloo:takeout", "name": "Takeout", "type": "urn:tag:service_type:qloo"},
+             {"id": "urn:tag:ambience:qloo:cozy", "name": "Cozy", "type": "urn:tag:ambience:qloo"},
+             {"id": "urn:tag:genre:place:cafe", "name": "Cafe", "type": "urn:tag:genre:place"}]},
+    {"name": "No Signal Bar", "entity_id": "00000000-0000-0000-0000-000000000002", "type": "urn:entity",
+     "subtype": "urn:entity:place", "popularity": 0.66, "query": {"distance": 0}, "tags": []}]}}
+LIVE_SHAPE_SEARCH = {"results": [{"name": "Example Artist", "entity_id": "00000000-0000-0000-0000-000000000003",
+    "types": ["urn:entity:artist"], "popularity": 0.9,
+    "tags": [{"name": "Indie", "tag_id": "urn:tag:genre:indie", "type": "urn:tag:genre", "value": "urn:tag:genre:indie"}]}]}
+
+
+def test_extract_live_insights_shape():
+    a, b = extract_entities(LIVE_SHAPE_INSIGHTS)
+    assert a["type"] == "urn:entity:place" and a["score"] == 0.81
+    assert a["tags"][:2] == ["Cafe", "Cozy"] and "Takeout" not in a["tags"][:2]
+    assert a["address"] == "1 Main St, Austin, TX"
+    assert b["score"] == 0.66 and b["tags"] == []  # no affinity without a signal -> popularity
+
+
+def test_extract_live_search_shape():
+    (e,) = extract_entities(LIVE_SHAPE_SEARCH)
+    assert e["type"] == "urn:entity:artist" and e["score"] == 0.9 and e["tags"] == ["Indie"]
+
+
+# ---- requested category + insights fallback --------------------------------
+from tasteproof.intent import detect_categories, resolve_category_tags  # noqa: E402
+
+
+class StubQloo(QlooClient):
+    """Mock client whose insights return nothing when given `empty_when` params."""
+
+    def __init__(self, empty_when=lambda p: False, tags=None):
+        super().__init__(mode="mock")
+        self.empty_when, self.stub_tags, self.calls = empty_when, tags, []
+
+    def insights(self, params):
+        self.calls.append(dict(params))
+        if self.empty_when(params):
+            return {"success": True, "results": {"entities": []}}
+        return super().insights(params)
+
+    def tags(self, params):
+        if self.stub_tags is not None:
+            q = params.get("filter.query", "")
+            return {"success": True, "results": {"tags": self.stub_tags.get(q, [])}}
+        return super().tags(params)
+
+
+COFFEE_TAG = {"id": "urn:tag:category:place:coffee_shop", "name": "Coffee shop", "type": "urn:tag:category:place"}
+
+
+def test_detect_categories():
+    assert detect_categories("Date night in Chicago, we love coffee shops") == ["coffee shop"]
+    assert detect_categories("a cozy cafe then cocktails") == ["coffee shop", "cocktail bar"]
+    assert detect_categories("date night for Radiohead fans") == []
+
+
+def test_resolve_category_prefers_exact_then_falls_through_terms():
+    q = StubQloo(tags={"coffee shop": [], "cafe": [{"id": "urn:tag:genre:x", "name": "Cafe racer"}, COFFEE_TAG | {"name": "Cafe"}]})
+    assert resolve_category_tags(q, "coffee shop") == [{"id": COFFEE_TAG["id"], "name": "Cafe"}]
+    assert resolve_category_tags(StubQloo(tags={}), "coffee shop") == []
+
+
+def test_requested_category_filters_place_insights():
+    q = StubQloo(tags={"coffee shop": [COFFEE_TAG]})
+    out = Agent(FakeLLM([lambda m: _good_plan(_index(QlooClient(mode="mock")))]), q).run("date night in Austin, coffee shops please")
+    place_calls = [c for c in q.calls if c["filter.type"] == "urn:entity:place"]
+    assert place_calls[0]["filter.tags"] == COFFEE_TAG["id"]
+    assert any(t["kind"] == "category_filter" for t in out["trace"])
+    assert any("category" in s for s in out["steps"])
+
+
+def test_no_category_no_tag_filter():
+    q = StubQloo()
+    Agent(FakeLLM([lambda m: _good_plan(_index(QlooClient(mode="mock")))]), q).run("date night in Austin")
+    assert all("filter.tags" not in c for c in q.calls)
+
+
+def test_insights_fallback_drops_signal_when_empty():
+    q = StubQloo(empty_when=lambda p: "signal.interests.entities" in p)
+    llm = FakeLLM([lambda m: _good_plan(_index(QlooClient(mode="mock")))])
+    a = Agent(llm, q)
+    steps, trace = [], []
+    res = a._tool("qloo_insights", {"filter_type": "urn:entity:place", "location": "Austin", "entity_ids": ["X"]},
+                  {}, [], {}, steps, lambda k, **kw: trace.append({"kind": k, **kw}))
+    assert res["entities"] and "fallback" in res["note"]
+    assert "signal.interests.entities" not in q.calls[-1]
+    assert any(t["kind"] == "insights_fallback" for t in trace)
+
+
+def test_insights_fallback_exhausted_returns_note():
+    q = StubQloo(empty_when=lambda p: True)
+    a = Agent(FakeLLM([]), q)
+    res = a._tool("qloo_insights", {"filter_type": "urn:entity:place", "location": "Austin", "entity_ids": ["X"], "tag_ids": ["t"]},
+                  {}, [], {}, [], lambda k, **kw: None)
+    assert res["entities"] == [] and "no results" in res["note"]
+    assert len(q.calls) == 4  # original + 3 relaxations

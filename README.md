@@ -4,7 +4,7 @@
 
 Built for the Qloo Agentic Hackathon. **Live demo:** https://tasteproof-qloo.vercel.app
 
-> **Mock vs live:** until a Qloo hackathon API key is configured (`QLOO_API_KEY`), the app runs in **mock mode**: Qloo responses come from labeled fixtures in `fixtures/` (all names start with "Mock …"), and the UI shows a **MOCK DATA** badge and banner. Fixture field names follow the Qloo docs but are unconfirmed until tested against the live API. Setting `QLOO_API_KEY` switches every call to the live API with no code change.
+> **Mock vs live:** until a Qloo hackathon API key is configured (`QLOO_API_KEY`), the app runs in **mock mode**: Qloo responses come from labeled fixtures in `fixtures/` (all names start with "Mock …"), and the UI shows a **MOCK DATA** badge and banner. Response field names were confirmed against the live hackathon API on 2026-10-27 (see the docstring in `tasteproof/qloo.py`). Setting `QLOO_API_KEY` switches every call to the live API with no code change; the production deployment runs in live mode.
 
 ## How it works
 1. You type e.g. *"Plan a Friday night in Austin for fans of Phoebe Bridgers."*
