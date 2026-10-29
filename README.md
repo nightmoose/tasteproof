@@ -46,9 +46,6 @@ python cli.py "Plan a Friday night in Austin for fans of Phoebe Bridgers" [--fau
 ```
 Deploy: `vercel deploy --prod`, with `XAI_API_KEY` (and later `QLOO_API_KEY`) set as Vercel environment variables.
 
-## Known gaps
-- Qloo response field names (`entity_id`, `query.affinity`) and the place location parameter are taken from the docs and not yet verified against the live hackathon API.
-
 ## License
 MIT — see [LICENSE](LICENSE).
 
